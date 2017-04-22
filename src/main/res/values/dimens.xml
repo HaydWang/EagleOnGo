@@ -1,0 +1,36 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="nav_header_vertical_spacing">16dp</dimen>
+    <dimen name="nav_header_height">160dp</dimen>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+
+    <dimen name="udw_margin_top">2dp</dimen>
+    <dimen name="udw_margin_bottom">2dp</dimen>
+    <dimen name="udw_margin_left">2dp</dimen>
+    <dimen name="udw_margin_right">2dp</dimen>
+
+    <dimen name="udw_overlay_margin_top">4dp</dimen>
+    <dimen name="udw_overlay_margin_bottom">4dp</dimen>
+    <dimen name="udw_overlay_margin_left">4dp</dimen>
+    <dimen name="udw_overlay_margin_right">4dp</dimen>
+
+    <dimen name="group_indicator_icon_size">38dp</dimen>
+    <dimen name="swap_indicator_icon_size">38dp</dimen>
+    <dimen name="indicators_margin">8dp</dimen>
+    <dimen name="lha_btm_scroll_shadow_height">5dp</dimen>
+
+    <!-- Width of tabs in UDW groups -->
+    <!-- for 12 inches left/right tabs -->
+    <dimen name="udw_tabs_width">85dp</dimen>
+    <!-- for 8 inches top tabs -->
+    <dimen name="udw_tabs_height">80dp</dimen>
+
+    <dimen name="udw_corner_size">4dp</dimen>
+    <dimen name="udw_lha_corner_size">3dp</dimen>
+    <dimen name="udw_group_corner_size">1dp</dimen>
+    <dimen name="udw_drag_indicator_padding">15dp</dimen>
+    <dimen name="udw_empty_padding">4dp</dimen>
+</resources>

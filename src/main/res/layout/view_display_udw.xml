@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2013 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+-->
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:tools="http://schemas.android.com/tools"
+             tools:ignore="contentDescription"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:background="@android:color/transparent"
+>
+
+    <!-- Container for actual UDW view -->
+    <FrameLayout
+            android:id="@+id/udwStub"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/udw_margin_top"
+            android:layout_marginBottom="@dimen/udw_margin_bottom"
+            android:layout_marginLeft="@dimen/udw_margin_left"
+            android:layout_marginRight="@dimen/udw_margin_right"
+    />
+
+    <ImageView
+            android:id="@id/maximize_icon"
+            android:src="@drawable/collapse"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="top|right"
+            android:layout_marginTop="8dp"
+            android:layout_marginRight="8dp"/>
+
+</FrameLayout>

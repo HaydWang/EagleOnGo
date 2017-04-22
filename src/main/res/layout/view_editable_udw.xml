@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2013 CNH Industrial NV. All rights reserved.
+  ~
+  ~ This software contains proprietary information of CNH Industrial NV. Neither
+  ~ receipt nor possession thereof confers any right to reproduce, use, or
+  ~ disclose in whole or in part any such information without written
+  ~ authorization from CNH Industrial NV.
+-->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                tools:ignore="contentDescription"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent"
+>
+
+    <!-- Container for actual UDW view -->
+    <FrameLayout
+            android:id="@+id/udwStub"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/udw_margin_top"
+            android:layout_marginLeft="@dimen/udw_margin_left"
+            android:layout_marginBottom="@dimen/udw_margin_bottom"
+            android:layout_marginRight="@dimen/udw_margin_right" />
+
+    <View
+            android:id="@+id/ghostView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/udw_editmode_overlay_bkg"
+            android:layout_marginTop="@dimen/udw_overlay_margin_top"
+            android:layout_marginLeft="@dimen/udw_overlay_margin_left"
+            android:layout_marginBottom="@dimen/udw_overlay_margin_bottom"
+            android:layout_marginRight="@dimen/udw_overlay_margin_right"
+    />
+
+    <!-- Swap UDW indicator -->
+    <RelativeLayout
+            android:id="@+id/udwSwapInd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:background="@drawable/editable_udw_indicator_swap_allowed_bg"
+            android:padding="2dp"
+    >
+        <ImageView
+                android:id="@+id/udwSwapImg"
+                android:layout_width="@dimen/swap_indicator_icon_size"
+                android:layout_height="@dimen/swap_indicator_icon_size"
+                android:src="@drawable/editable_udw_indicator_swap_allowed"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+        />
+    </RelativeLayout>
+
+    <!-- Tab UDW indicator -->
+    <RelativeLayout
+            android:id="@+id/udwTabInd"
+            android:layout_width="@dimen/udw_tabs_width"
+            android:layout_height="55dp"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/editable_udw_indicator_add_allowed_bg"
+            android:padding="2dp"
+            android:layout_alignTop="@+id/udwSwapInd"
+            android:layout_alignBottom="@+id/udwGroupInd"
+    >
+        <ImageView
+                android:id="@+id/udwTabImg"
+                android:layout_width="@dimen/group_indicator_icon_size"
+                android:layout_height="@dimen/group_indicator_icon_size"
+                android:src="@drawable/editable_udw_indicator_add_allowed"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"/>
+    </RelativeLayout>
+
+    <!-- Group UDW indicator -->
+    <RelativeLayout
+            android:id="@+id/udwGroupInd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:background="@drawable/editable_udw_indicator_add_allowed_bg"
+    >
+        <ImageView
+                android:id="@+id/udwGroupImg"
+                android:layout_width="@dimen/group_indicator_icon_size"
+                android:layout_height="@dimen/group_indicator_icon_size"
+                android:src="@drawable/editable_udw_indicator_add_allowed"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+        />
+    </RelativeLayout>
+
+    <!-- Selected UDW frame -->
+    <View
+            android:id="@+id/udwSelectedInd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/editable_udw_selected_bg"
+            android:layout_marginTop="@dimen/udw_overlay_margin_top"
+            android:layout_marginLeft="@dimen/udw_overlay_margin_left"
+            android:layout_marginBottom="@dimen/udw_overlay_margin_bottom"
+            android:layout_marginRight="@dimen/udw_overlay_margin_right"
+    />
+
+    <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_edit_layout_udw_handle"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:padding="@dimen/udw_drag_indicator_padding"
+            android:id="@+id/imageView2"/>
+
+</RelativeLayout>
