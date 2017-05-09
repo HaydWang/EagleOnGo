@@ -2,9 +2,14 @@ package com.cnh.android.eagleongo.udw;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.os.Handler;
 import android.os.Parcelable;
+import android.util.Log;
 import android.view.View;
 
+import com.cnh.android.runscreenmanager.provider.IRunscreenManager;
+
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -61,14 +66,15 @@ public abstract class GenericUdw<T> {
     protected boolean mMaximized;
     protected boolean mCreated = false;
 
-    public GenericUdw() {
-        id = "Mock UDW";
+    public GenericUdw(String id, String packageName, String className) {
+        this.id = id;
         uuid = UUID.randomUUID();
-        widgetInfo = null;
-        packageName = "Mock.packageName";
-        className = "Mock.className";
-        initParams = "Mock.initParams";
+        widgetInfo = new WidgetInfo(id);
+        this.packageName = packageName;
+        this.className = className;
+        initParams = "";
     }
+
 
     /**
      * UDW from existing element.
@@ -85,8 +91,6 @@ public abstract class GenericUdw<T> {
         this.title = el.title;
         this.uuid = el.uuid;
         //setPosition(el.getGroup(), el.getCol(), el.getRow(), el.getTab());
-
-        //mWmUtils = WmUtils.getInstance();
     }
 
     /**
@@ -429,15 +433,77 @@ public abstract class GenericUdw<T> {
 //        return el;
 //    }
 
+    private static Handler handler = new Handler();
+    public static boolean onCreateUdw(final Context currentContext, final GenericUdw<?> el) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (el.packageName == null) return;
+
+                if (el.isCreated()) return;
+
+                try {
+                    // Clear the inflater cache before creating the UDW
+                    //WmUtils.clearWidgetCache(mWmUtils.loadExternalContext(el.packageName));
+
+                    // Load the UDW class
+                    el.getUdwView(currentContext).getClass()
+                            .getMethod("onCreate", UUID.class)
+                            .invoke(el.getUdwView(currentContext), el.getUuid());
+                    el.setCreated();
+
+                }
+                catch (Throwable e) { Log.w(TAG, e.getClass().getName()+": "+e.getMessage(), e); }
+            }
+        });
+        return true;
+    }
+
     public void callOnCreate(Context context) {
         if (state == null) {
-            //RunscreenManagerProvider.onCreateUdw(context, this);
+            onCreateUdw(context, this);
             state = RunningState.CREATED;
+
+            // UdwFrameLayout actually does nothing.
 //            UdwFrameLayout layout = ((UdwFrameLayout)getView(context).findViewById(R.id.udwStub));
 //            if (layout != null) {
 //                layout.setRunningState(state);
 //            }
         }
+    }
+
+    public static boolean onDestroyUdw(final Context currentContext, final GenericUdw<?> el) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (el.packageName == null) return;
+
+                try {
+                    el.getUdwView(currentContext).getClass()
+                            .getMethod("onDestroy")
+                            .invoke(el.getUdwView(currentContext));
+                }
+                catch (Throwable e) { Log.w(TAG, e.getClass().getName()+": "+e.getMessage(), e); }
+            }
+        });
+        return true;
+    }
+
+    public static boolean callClearOverlay(final Context currentContext, final GenericUdw<?> el) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (el.packageName == null) return;
+
+                try {
+                    el.getUdwView(currentContext).getClass()
+                            .getMethod("clearOverlay")
+                            .invoke(el.getUdwView(currentContext));
+                }
+                catch (Throwable e) { Log.w(TAG, e.getClass().getName()+": "+e.getMessage(), e); }
+            }
+        });
+        return true;
     }
 
     public void callOnDestroy(Context context) {
@@ -454,7 +520,7 @@ public abstract class GenericUdw<T> {
                 return;
         }
 //		if (D) Log.d(TAG, "callOnDestroy " + this.id + " " + hashCode());
-        //RunscreenManagerProvider.onDestroyUdw(context, this);
+        onDestroyUdw(context, this);
         state = RunningState.DESTROYED;
 //        UdwFrameLayout layout = ((UdwFrameLayout)getView(context).findViewById(R.id.udwStub));
 //        if (layout != null) {
@@ -462,9 +528,78 @@ public abstract class GenericUdw<T> {
 //        }
     }
 
+    public static boolean initUdw(final IRunscreenManager rsm, final Context currentContext, final int position, final GenericUdw<?> el, final boolean maximized) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                Method method = null;
+                View view = null;
+                String size = null;
+
+                try {
+//					// Load external UDW class to avoid ClassCastException
+//					Class<?> udwClass = mWmUtils.loadExternalClass(el.packageName, UDW.class.getName());
+
+                    // void init(String id, String params, int position, boolean tabbed, String size);
+                    view = el.getUdwView(currentContext);
+                    method = view.getClass().getMethod("init", Object.class, String.class, String.class, int.class, boolean.class, boolean.class, String.class);
+                    size = el.getSize();
+                    if (maximized && el.widgetInfo.maximizable) {
+                        if (el.widgetInfo.fullMaximizable) {
+                            size = "2x6";
+                            //size = mWmUtils.isPhoenix() ? "2x6" : "2x5";
+                        }
+                        else {
+                            size = "2x3";
+                            //size = mWmUtils.isPhoenix() ? "2x3" : "2x2";
+                        }
+                    }
+
+//					if (D) Log.d(TAG, "initUdw is rsm null? " + (rsm == null));
+
+                    method.invoke(view, rsm, el.id, el.initParams, position,
+                            false, //el.getGroup() != null, // is grouped
+                            false, //el.getGroup() != null && el.getGroup().isTabbed(), // is tabbed
+                            size);
+                }
+                catch (ClassCastException ex) {
+                    Log.w(TAG, ex.getClass().getName()+": "+ex.getMessage(), ex);
+
+                    // Clear cache and rey again
+                    /*try {
+                        mWmUtils.clearClassesCache(null);
+                        method.invoke(view, rsm, el.id, el.initParams, position,
+                                el.getGroup() != null, // is grouped
+                                el.getGroup() != null && el.getGroup().isTabbed(), // is tabbed
+                                size);
+                    }
+                    catch (Throwable e) { Log.w(TAG, e.getClass().getName()+": "+e.getMessage(), e); }
+                    */
+                }
+                catch (Throwable e) { Log.w(TAG, e.getClass().getName()+": "+e.getMessage(), e); }
+            }
+        });
+        return true;
+    }
+
     public void callInit(Context context, int position, boolean maximized) {
-        //RunscreenManagerProvider.initUdw(rsm, context, position, this, maximized);
+        initUdw(null, context, position, this, maximized);
         state = RunningState.INITED;
+    }
+
+    public static boolean onResumeUdw(final Context context, final GenericUdw<?> el) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (el.packageName == null) return;
+
+                try {
+                    el.getUdwView(context).getClass().getMethod("onResume").invoke(el.getUdwView(context));
+                }
+                catch (Throwable e) { Log.w(TAG, e.getClass().getName()+": "+e.getMessage(), e); }
+            }
+        });
+        return true;
     }
 
     public void callOnResume(Context context) {
@@ -481,12 +616,27 @@ public abstract class GenericUdw<T> {
             case DESTROYED:
                 return;
         }
-        //RunscreenManagerProvider.onResumeUdw(context, this);
+        onResumeUdw(context, this);
         state = RunningState.RESUMED;
         //UdwFrameLayout layout = ((UdwFrameLayout)getView(context).findViewById(R.id.udwStub));
         //if (layout != null) {
         //    layout.setRunningState(state);
         //}
+    }
+
+    public static boolean onPauseUdw(final Context context, final GenericUdw<?> el) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (el.packageName == null) return;
+
+                try {
+                    el.getUdwView(context).getClass().getMethod("onPause").invoke(el.getUdwView(context));
+                }
+                catch (Throwable e) { Log.w(TAG, e.getClass().getName()+": "+e.getMessage(), e); }
+            }
+        });
+        return true;
     }
 
     public void callOnPause(Context context) {
@@ -501,7 +651,7 @@ public abstract class GenericUdw<T> {
             case DESTROYED:
                 return;
         }
-        //RunscreenManagerProvider.onPauseUdw(context, this);
+        onPauseUdw(context, this);
         state = RunningState.PAUSED;
         //UdwFrameLayout layout = ((UdwFrameLayout)getView(context).findViewById(R.id.udwStub));
         //if (layout != null) {

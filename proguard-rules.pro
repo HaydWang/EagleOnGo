@@ -15,3 +15,15 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+##---------------Begin: proguard configuration for guava --------
+-keep com.google.common.**
+##---------------End: proguard configuration for guava ----------
+
+-keepclasseswithmembernames class * {   native <methods>; }
+-keep class org.zeromq.** {*;}
+-keep public class org.zeromq.** {*;}
+-keep class com.google.inject.** { *; }
+-keep class javax.inject.* { *; }
+-keep interface com.google.inject.** { *; }
+-keep class org.mvel2.** { *; }

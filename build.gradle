@@ -1,3 +1,24 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.3.1'
+
+        // Artifactory
+        classpath 'org.jfrog.buildinfo:build-info-extractor-gradle:4.4.14'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
 apply plugin: 'com.android.application'
 
 android {
@@ -10,16 +31,26 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        multiDexEnabled true
     }
     buildTypes {
         release {
-            minifyEnabled false
+            shrinkResources true
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 }
 
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
+
 dependencies {
+    //compile(name: 'zmqndk-13.0.1-rc13-SNAPSHOT', ext: 'aar')
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
@@ -29,8 +60,19 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:25.2.0'
     testCompile 'junit:junit:4.12'
 
+    compile 'com.android.support:multidex:1.0.1'
+
     compile 'com.jakewharton:butterknife:8.5.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
+
+//    compile 'com.google.guava:guava:19.0'
+//    compile ('com.google.protobuf:protobuf-java:3.3.0') {
+//        exclude group: 'com.google.guava', module: 'guava'
+//    }
+
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+
+    //compile 'org.zeromq:jzmq:3.1.2-cnh'
 
     compile project(':corelib')
 }

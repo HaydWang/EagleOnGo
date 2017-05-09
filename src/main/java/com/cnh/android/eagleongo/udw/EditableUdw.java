@@ -1,7 +1,6 @@
 package com.cnh.android.eagleongo.udw;
 
 import android.content.Context;
-import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;

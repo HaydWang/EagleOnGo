@@ -6,4 +6,9 @@
 
     <string name="action_settings">Settings</string>
     <string name="item_not_available">Item not available.</string>
+
+    <string name="action_show_pfudw">PF UDW</string>
+    <string name="action_show_agudw">AG UDW</string>
+    <string name="action_show_ymudw">YM UDW</string>
+
 </resources>

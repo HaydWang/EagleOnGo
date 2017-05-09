@@ -3,8 +3,6 @@ package com.cnh.android.eagleongo.model;
 import android.content.Context;
 import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,7 +27,7 @@ public class SingleUdwRecyclerViewAdapter extends RecyclerView.Adapter<SingleUdw
     @Override
     public void onItemMove(int fromPosition, int toPosition) {
         Collections.swap(mData,fromPosition,toPosition);
-        //notifyItemMoved(fromPosition,toPosition);
+        // will notify in TouchCallBack notifyItemMoved(fromPosition,toPosition);
     }
 
     @Override
@@ -37,6 +35,7 @@ public class SingleUdwRecyclerViewAdapter extends RecyclerView.Adapter<SingleUdw
         mData.remove(position);
         notifyItemRemoved(position);
 
+        //mData.get(position).udw.callOnResume(mData.get(position).udwView.getContext());
         // TODO: release UDW
     }
 
@@ -67,15 +66,22 @@ public class SingleUdwRecyclerViewAdapter extends RecyclerView.Adapter<SingleUdw
 
     }
 
+    public void setData(List<SingleUdwViewHolder.UdwItem> data) {
+        for (SingleUdwViewHolder.UdwItem udw : mData) {
+            udw.udw.callOnPause(mContext);
+            udw.udw.callOnDestroy(mContext);
+            udw.udw = null;
+        }
+        mData.clear();
+        mData.addAll(data);
+        notifyDataSetChanged();
+    }
+
     public SingleUdwRecyclerViewAdapter(Context context) {
         mContext = context;
         mLayoutInflater = LayoutInflater.from(context);
 
         mData = new ArrayList<>();
-        for (int i=0; i<32; i++) {
-            SingleUdwViewHolder.UdwItem item = new SingleUdwViewHolder.UdwItem(context, i);
-            mData.add(item);
-        }
     }
 
     @Override
@@ -88,17 +94,16 @@ public class SingleUdwRecyclerViewAdapter extends RecyclerView.Adapter<SingleUdw
         holder.udwViewHolder.setBackgroundColor(SingleUdwViewHolder.getBackgroundColor(mContext,
                 mData.get(holder.getAdapterPosition()).type));
 
-        ViewGroup parent = (ViewGroup) mData.get(position).udwView.getParent();
+        View udwView = mData.get(position).udwView;
+        ViewGroup parent = (ViewGroup) udwView.getParent();
         if (parent == holder.udwViewHolder) return;
 
-        View swap = holder.udwViewHolder.getChildAt(holder.udwViewHolder.getChildCount()-1);
         holder.udwViewHolder.removeAllViews();
         if (parent != null) {
-            parent.removeView(mData.get(position).udwView);
-
-            if (swap != null) parent.addView(swap);
+            parent.removeView(udwView);
         }
-        holder.udwViewHolder.addView(mData.get(position).udwView);
+        holder.udwViewHolder.addView(udwView);
+        mData.get(position).udw.callOnResume(udwView.getContext());
     }
 
     @Override

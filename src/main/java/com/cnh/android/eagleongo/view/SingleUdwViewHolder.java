@@ -11,6 +11,9 @@ import butterknife.ButterKnife;
 import com.cnh.android.eagleongo.R;
 import com.cnh.android.eagleongo.udw.UdwView;
 
+import static com.cnh.android.udw.registration.UDW.POSITION_LEFT_BOTTOM;
+import static com.cnh.android.udw.registration.UDW.POSITION_RUNSCREEN;
+
 /**
  * Created by Hai on 4/22/17.
  */
@@ -27,14 +30,21 @@ public class SingleUdwViewHolder extends RecyclerView.ViewHolder {
     public static class UdwItem {
         int id;
         public ITEM_TYPE type;
+        public UdwView udw;
         public View udwView;
 
-        public UdwItem(Context context, int id) {
+        public UdwItem(Context context, int id, String sId, String packageName, String className) {
             this.id = id;
             type = id % 2 == 0 ? ITEM_TYPE.ITEM_TYPE_SINGLE : ITEM_TYPE.ITEM_TYPE_DOUBLE;
 
             //TODO: change to lazy initial
-            udwView = new UdwView().getView(context);
+            udw = new UdwView(sId,
+                    packageName,
+                    className);
+            udwView = udw.getView(context);
+            udw.callOnCreate(context);
+            udw.callInit(context, POSITION_RUNSCREEN, false);
+            //udw.callOnResume(context);
         }
     }
 

@@ -1,11 +1,14 @@
 package com.cnh.android.eagleongo;
 
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.*;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -19,6 +22,15 @@ import butterknife.ButterKnife;
 
 import com.cnh.android.eagleongo.model.SingleUdwRecyclerViewAdapter;
 import com.cnh.android.eagleongo.view.RecyclerItemTouchHelperCallback;
+import com.cnh.android.eagleongo.view.SingleUdwViewHolder;
+import com.cnh.pf.signal.Consumer;
+import com.cnh.pf.signal.OnConnectionChangeListener;
+import com.cnh.pf.signal.Producer;
+import com.cnh.pf.signal.Signal;
+import com.cnh.pf.signal.SignalUri;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -63,16 +75,18 @@ public class MainActivity extends AppCompatActivity
 
         //mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         //mRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
-        mRecyclerView.setLayoutManager(new StaggeredGridLayoutManager(grid, OrientationHelper.VERTICAL));
-        mRecyclerView.setAdapter(new SingleUdwRecyclerViewAdapter(this));
+        mRecyclerView.setLayoutManager(new StaggeredGridLayoutManager(1, OrientationHelper.VERTICAL));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-
         //TODO: Set diver to 6px, need move to dimen
-        mRecyclerView.addItemDecoration(new SingleUdwRecyclerViewAdapter.SpaceItemDecoration(6));
+        mRecyclerView.addItemDecoration(new SingleUdwRecyclerViewAdapter.SpaceItemDecoration(2));
 
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(
                 new RecyclerItemTouchHelperCallback(mRecyclerView.getAdapter()));
         itemTouchHelper.attachToRecyclerView(mRecyclerView);
+
+        SingleUdwRecyclerViewAdapter adapter = new SingleUdwRecyclerViewAdapter(this);
+        adapter.setData(getPfUdws());
+        mRecyclerView.setAdapter(adapter);
     }
 
     @Override
@@ -116,6 +130,24 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
 
+        if (id == R.id.action_show_pfudw) {
+            SingleUdwRecyclerViewAdapter adapter = (SingleUdwRecyclerViewAdapter)mRecyclerView.getAdapter();
+            adapter.setData(getPfUdws());
+            return true;
+        }
+
+        if (id == R.id.action_show_agudw) {
+            SingleUdwRecyclerViewAdapter adapter = (SingleUdwRecyclerViewAdapter)mRecyclerView.getAdapter();
+            adapter.setData(getAgUdws());
+            return true;
+        }
+
+        if (id == R.id.action_show_ymudw) {
+            SingleUdwRecyclerViewAdapter adapter = (SingleUdwRecyclerViewAdapter)mRecyclerView.getAdapter();
+            adapter.setData(getYmUdws());
+            return true;
+        }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -142,5 +174,141 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private List<SingleUdwViewHolder.UdwItem> getPfUdws() {
+        List<SingleUdwViewHolder.UdwItem> data = new ArrayList<>();
+        int i = 0;
+
+        SingleUdwViewHolder.UdwItem item = new SingleUdwViewHolder.UdwItem(this, i++,
+                "TotalFuelUsedUDW",
+                "com.cnh.pf.pfudwservice",
+                "com.cnh.pf.pfudwservice.widget.TotalFuelUsedUDW");
+        data.add(item);
+
+        // Need set el.param as JSON string
+//        item = new SingleUdwViewHolder.UdwItem(this, i++,
+//                "GroundSpeedUDW",
+//                "com.cnh.pf.pfudwservice",
+//                "com.cnh.pf.pfudwservice.widget.GroundSpeedUDW");
+//        data.add(item);
+
+        item = new SingleUdwViewHolder.UdwItem(this, i++,
+                "FuelUsedUDW",
+                "com.cnh.pf.pfudwservice",
+                "com.cnh.pf.pfudwservice.widget.FuelUsedUDW");
+        data.add(item);
+
+        item = new SingleUdwViewHolder.UdwItem(this, i++,
+                "AverageWorkingRateUDW",
+                "com.cnh.pf.pfudwservice",
+                "com.cnh.pf.pfudwservice.widget.AverageWorkingRateUDW");
+        data.add(item);
+
+        item = new SingleUdwViewHolder.UdwItem(this, i++,
+                "TimeInWorkUDW",
+                "com.cnh.pf.pfudwservice",
+                "com.cnh.pf.pfudwservice.widget.TimeInWorkUDW");
+        data.add(item);
+
+        item = new SingleUdwViewHolder.UdwItem(this, i++,
+                "TimeInTaskUDW",
+                "com.cnh.pf.pfudwservice",
+                "com.cnh.pf.pfudwservice.widget.TimeInTaskUDW");
+        data.add(item);
+
+        item = new SingleUdwViewHolder.UdwItem(this, i++,
+                "OverlapControlUDW",
+                "com.cnh.pf.rscudwservice",
+                "com.cnh.pf.rscudwservice.widget.OverlapControlUDW");
+        data.add(item);
+
+        item = new SingleUdwViewHolder.UdwItem(this, i++,
+                "BoundaryControlUDW",
+                "com.cnh.pf.rscudwservice",
+                "com.cnh.pf.rscudwservice.widget.BoundaryControlUDW");
+        data.add(item);
+
+        item = new SingleUdwViewHolder.UdwItem(this, i++,
+                "OverlapControlUDW",
+                "com.cnh.pf.rscudwservice",
+                "com.cnh.pf.rscudwservice.widget.OverlapControlUDW");
+        data.add(item);
+
+        return data;
+    }
+
+    private List<SingleUdwViewHolder.UdwItem> getAgUdws() {
+        List<SingleUdwViewHolder.UdwItem> data = new ArrayList<>();
+        int i = 0;
+
+        SingleUdwViewHolder.UdwItem item = new SingleUdwViewHolder.UdwItem(this, i++,
+                "CrossTrackErrorStatusUDW",
+                "com.cnh.pf.agudwservice",
+                "com.cnh.pf.agudwservice.widget.CrossTrackErrorStatusUDW");
+        data.add(item);
+
+        item = new SingleUdwViewHolder.UdwItem(this, i++,
+                "RowGuideOffsetUDW",
+                "com.cnh.pf.agudwservice",
+                "com.cnh.pf.agudwservice.widget.RowGuideOffsetUDW");
+        data.add(item);
+
+        return data;
+    }
+
+    private List<SingleUdwViewHolder.UdwItem> getYmUdws() {
+        List<SingleUdwViewHolder.UdwItem> data = new ArrayList<>();
+        int i = 0;
+
+        SingleUdwViewHolder.UdwItem item = new SingleUdwViewHolder.UdwItem(this, i++,
+                "AverageYieldUDW",
+                "com.cnh.pf.ymudwservice",
+                "com.cnh.pf.ymudwservice.widget.AverageYieldUDW");
+        data.add(item);
+
+        item = new SingleUdwViewHolder.UdwItem(this, i++,
+                "AverageYieldCounterUDW",
+                "com.cnh.pf.ymudwservice",
+                "com.cnh.pf.ymudwservice.widget.AverageYieldCounterUDW");
+        data.add(item);
+
+        item = new SingleUdwViewHolder.UdwItem(this, i++,
+                "AverageMoistureUDW",
+                "com.cnh.pf.ymudwservice",
+                "com.cnh.pf.ymudwservice.widget.AverageMoistureUDW");
+        data.add(item);
+
+        item = new SingleUdwViewHolder.UdwItem(this, i++,
+                "AverageFlowUDW",
+                "com.cnh.pf.ymudwservice",
+                "com.cnh.pf.ymudwservice.widget.AverageFlowUDW");
+        data.add(item);
+
+        item = new SingleUdwViewHolder.UdwItem(this, i++,
+                "CropTemperatureUDW",
+                "com.cnh.pf.ymudwservice",
+                "com.cnh.pf.ymudwservice.widget.CropTemperatureUDW");
+        data.add(item);
+
+        item = new SingleUdwViewHolder.UdwItem(this, i++,
+                "AverageFlowCounterUDW",
+                "com.cnh.pf.ymudwservice",
+                "com.cnh.pf.ymudwservice.widget.AverageFlowCounterUDW");
+        data.add(item);
+
+        item = new SingleUdwViewHolder.UdwItem(this, i++,
+                "CrossTrackErrorStatusUDW",
+                "com.cnh.pf.agudwservice",
+                "com.cnh.pf.agudwservice.widget.CrossTrackErrorStatusUDW");
+        data.add(item);
+
+        item = new SingleUdwViewHolder.UdwItem(this, i++,
+                "RowGuideOffsetUDW",
+                "com.cnh.pf.agudwservice",
+                "com.cnh.pf.agudwservice.widget.RowGuideOffsetUDW");
+        data.add(item);
+
+        return data;
     }
 }

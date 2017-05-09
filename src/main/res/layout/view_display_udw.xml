@@ -11,29 +11,29 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
              xmlns:tools="http://schemas.android.com/tools"
              tools:ignore="contentDescription"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
              android:background="@android:color/transparent"
 >
 
     <!-- Container for actual UDW view -->
     <FrameLayout
             android:id="@+id/udwStub"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/udw_margin_top"
             android:layout_marginBottom="@dimen/udw_margin_bottom"
             android:layout_marginLeft="@dimen/udw_margin_left"
             android:layout_marginRight="@dimen/udw_margin_right"
     />
 
-    <ImageView
-            android:id="@id/maximize_icon"
-            android:src="@drawable/collapse"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_gravity="top|right"
-            android:layout_marginTop="8dp"
-            android:layout_marginRight="8dp"/>
+    <!--<ImageView-->
+            <!--android:id="@id/maximize_icon"-->
+            <!--android:src="@drawable/collapse"-->
+            <!--android:layout_width="32dp"-->
+            <!--android:layout_height="32dp"-->
+            <!--android:layout_gravity="top|right"-->
+            <!--android:layout_marginTop="8dp"-->
+            <!--android:layout_marginRight="8dp"/>-->
 
 </FrameLayout>
