@@ -54,13 +54,13 @@ public class SingleUdwViewHolder extends RecyclerView.ViewHolder {
     }
 
     public static int getBackgroundColor(Context context, ITEM_TYPE type) {
-        if (type == ITEM_TYPE.ITEM_TYPE_SINGLE) {
+        /*if (type == ITEM_TYPE.ITEM_TYPE_SINGLE) {
             return context.getResources().getColor(R.color.colorPrimary);
         } else if (type == ITEM_TYPE.ITEM_TYPE_DOUBLE)  {
             return context.getResources().getColor(R.color.colorPrimaryDark);
-        }
+        }*/
 
-        return context.getResources().getColor(R.color.colorPrimary);
+        return context.getResources().getColor(android.R.color.transparent);
     }
 
 }

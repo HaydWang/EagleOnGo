@@ -6,7 +6,10 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
 import com.cnh.android.eagleongo.R;
+import com.cnh.android.eagleongo.udw.UdwView;
 import com.cnh.android.eagleongo.view.RecyclerItemTouchHelperCallback;
 import com.cnh.android.eagleongo.view.SingleUdwViewHolder;
 
@@ -32,11 +35,17 @@ public class SingleUdwRecyclerViewAdapter extends RecyclerView.Adapter<SingleUdw
 
     @Override
     public void onItemDissmiss(int position) {
+        SingleUdwViewHolder.UdwItem udw = mData.get(position);
         mData.remove(position);
         notifyItemRemoved(position);
 
-        //mData.get(position).udw.callOnResume(mData.get(position).udwView.getContext());
-        // TODO: release UDW
+        if (udw != null) {
+            udw.udw.callOnPause(mContext);
+            udw.udw.callOnDestroy(mContext);
+            udw.udw = null;
+
+            Toast.makeText(mContext, "UDW is removed.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

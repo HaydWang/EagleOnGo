@@ -1,11 +1,16 @@
 package com.cnh.android.eagleongo;
 
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
+import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.*;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
@@ -17,9 +22,16 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
+import android.widget.Toast;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import com.cnh.android.eagleongo.fragment.HomeFragment;
+import com.cnh.android.eagleongo.fragment.SettingsFragment;
+import com.cnh.android.eagleongo.fragment.UDWFragment;
+import com.cnh.android.eagleongo.fragment.UserFragment;
 import com.cnh.android.eagleongo.model.SingleUdwRecyclerViewAdapter;
 import com.cnh.android.eagleongo.view.RecyclerItemTouchHelperCallback;
 import com.cnh.android.eagleongo.view.SingleUdwViewHolder;
@@ -34,10 +46,10 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-    @BindView(R.id.recyclerview_mainscreen)
-    RecyclerView mRecyclerView;
+    @BindView(R.id.bottom_navigation_menu)
+    BottomNavigationView mBottomNavigationView;
 
-    int grid = 1;
+    private Fragment[] mFragments;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,21 +60,24 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        /* Looks FAB does not fit UI style here. Disable it for now.
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                int grid = 1;
                 if (grid >= 3 )
                     grid = 1;
                 else
                     grid++;
-
                 mRecyclerView.setLayoutManager(new StaggeredGridLayoutManager(grid, OrientationHelper.VERTICAL));
-
                 //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 //.setAction("Action", null).show();
             }
-        });
+        }); */
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -73,32 +88,60 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        //mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        //mRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
-        mRecyclerView.setLayoutManager(new StaggeredGridLayoutManager(1, OrientationHelper.VERTICAL));
-        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        //TODO: Set diver to 6px, need move to dimen
-        mRecyclerView.addItemDecoration(new SingleUdwRecyclerViewAdapter.SpaceItemDecoration(2));
+        // Init tabs and fragments
+        mFragments = new Fragment[4];
+        mFragments[0] = new HomeFragment();
+        mFragments[1] = new UDWFragment();
+        mFragments[2] = new SettingsFragment();
+        mFragments[3] = new UserFragment();
+        mBottomNavigationView.setOnNavigationItemSelectedListener(
+                new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(MenuItem item) {
+                return onTabItemSelected(item.getItemId());
+            }
+        });
+        mBottomNavigationView.findViewById(R.id.action_udw).performClick();
+    }
 
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(
-                new RecyclerItemTouchHelperCallback(mRecyclerView.getAdapter()));
-        itemTouchHelper.attachToRecyclerView(mRecyclerView);
-
-        SingleUdwRecyclerViewAdapter adapter = new SingleUdwRecyclerViewAdapter(this);
-        adapter.setData(getPfUdws());
-        mRecyclerView.setAdapter(adapter);
+    private boolean onTabItemSelected(int id){
+        Fragment fragment = null;
+        switch (id){
+            case R.id.action_home:
+                fragment = mFragments[0];
+                break;
+            case R.id.action_udw:
+                fragment = mFragments[1];
+                break;
+            case R.id.action_settings:
+                //fragment = mFragments[2];
+                // Just launch Vehicle app instaed of change fragment, until merge settings UI
+                // into fragment
+                try {
+                    Intent i = new Intent();
+                    i.setComponent(new ComponentName("com.cnh.pf.android.vehicle",
+                            "com.cnh.pf.android.vehicle.VehicleActivity"));
+                    i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(i);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(this,
+                            "Vehicle Setup App not found. ", Toast.LENGTH_LONG).show();
+                }
+                return false;
+                //break;
+        }
+        if(fragment!=null) {
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.fragments_container, fragment);
+            transaction.commit();
+        }
+        return true;
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-
-        if(newConfig.orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT){
-            grid = 1;
-        }else{
-            grid = 2;
-        }
-        mRecyclerView.setLayoutManager(new StaggeredGridLayoutManager(grid, OrientationHelper.VERTICAL));
     }
 
     @Override
@@ -130,24 +173,6 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
 
-        if (id == R.id.action_show_pfudw) {
-            SingleUdwRecyclerViewAdapter adapter = (SingleUdwRecyclerViewAdapter)mRecyclerView.getAdapter();
-            adapter.setData(getPfUdws());
-            return true;
-        }
-
-        if (id == R.id.action_show_agudw) {
-            SingleUdwRecyclerViewAdapter adapter = (SingleUdwRecyclerViewAdapter)mRecyclerView.getAdapter();
-            adapter.setData(getAgUdws());
-            return true;
-        }
-
-        if (id == R.id.action_show_ymudw) {
-            SingleUdwRecyclerViewAdapter adapter = (SingleUdwRecyclerViewAdapter)mRecyclerView.getAdapter();
-            adapter.setData(getYmUdws());
-            return true;
-        }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -174,141 +199,5 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
-    }
-
-    private List<SingleUdwViewHolder.UdwItem> getPfUdws() {
-        List<SingleUdwViewHolder.UdwItem> data = new ArrayList<>();
-        int i = 0;
-
-        SingleUdwViewHolder.UdwItem item = new SingleUdwViewHolder.UdwItem(this, i++,
-                "TotalFuelUsedUDW",
-                "com.cnh.pf.pfudwservice",
-                "com.cnh.pf.pfudwservice.widget.TotalFuelUsedUDW");
-        data.add(item);
-
-        // Need set el.param as JSON string
-//        item = new SingleUdwViewHolder.UdwItem(this, i++,
-//                "GroundSpeedUDW",
-//                "com.cnh.pf.pfudwservice",
-//                "com.cnh.pf.pfudwservice.widget.GroundSpeedUDW");
-//        data.add(item);
-
-        item = new SingleUdwViewHolder.UdwItem(this, i++,
-                "FuelUsedUDW",
-                "com.cnh.pf.pfudwservice",
-                "com.cnh.pf.pfudwservice.widget.FuelUsedUDW");
-        data.add(item);
-
-        item = new SingleUdwViewHolder.UdwItem(this, i++,
-                "AverageWorkingRateUDW",
-                "com.cnh.pf.pfudwservice",
-                "com.cnh.pf.pfudwservice.widget.AverageWorkingRateUDW");
-        data.add(item);
-
-        item = new SingleUdwViewHolder.UdwItem(this, i++,
-                "TimeInWorkUDW",
-                "com.cnh.pf.pfudwservice",
-                "com.cnh.pf.pfudwservice.widget.TimeInWorkUDW");
-        data.add(item);
-
-        item = new SingleUdwViewHolder.UdwItem(this, i++,
-                "TimeInTaskUDW",
-                "com.cnh.pf.pfudwservice",
-                "com.cnh.pf.pfudwservice.widget.TimeInTaskUDW");
-        data.add(item);
-
-        item = new SingleUdwViewHolder.UdwItem(this, i++,
-                "OverlapControlUDW",
-                "com.cnh.pf.rscudwservice",
-                "com.cnh.pf.rscudwservice.widget.OverlapControlUDW");
-        data.add(item);
-
-        item = new SingleUdwViewHolder.UdwItem(this, i++,
-                "BoundaryControlUDW",
-                "com.cnh.pf.rscudwservice",
-                "com.cnh.pf.rscudwservice.widget.BoundaryControlUDW");
-        data.add(item);
-
-        item = new SingleUdwViewHolder.UdwItem(this, i++,
-                "OverlapControlUDW",
-                "com.cnh.pf.rscudwservice",
-                "com.cnh.pf.rscudwservice.widget.OverlapControlUDW");
-        data.add(item);
-
-        return data;
-    }
-
-    private List<SingleUdwViewHolder.UdwItem> getAgUdws() {
-        List<SingleUdwViewHolder.UdwItem> data = new ArrayList<>();
-        int i = 0;
-
-        SingleUdwViewHolder.UdwItem item = new SingleUdwViewHolder.UdwItem(this, i++,
-                "CrossTrackErrorStatusUDW",
-                "com.cnh.pf.agudwservice",
-                "com.cnh.pf.agudwservice.widget.CrossTrackErrorStatusUDW");
-        data.add(item);
-
-        item = new SingleUdwViewHolder.UdwItem(this, i++,
-                "RowGuideOffsetUDW",
-                "com.cnh.pf.agudwservice",
-                "com.cnh.pf.agudwservice.widget.RowGuideOffsetUDW");
-        data.add(item);
-
-        return data;
-    }
-
-    private List<SingleUdwViewHolder.UdwItem> getYmUdws() {
-        List<SingleUdwViewHolder.UdwItem> data = new ArrayList<>();
-        int i = 0;
-
-        SingleUdwViewHolder.UdwItem item = new SingleUdwViewHolder.UdwItem(this, i++,
-                "AverageYieldUDW",
-                "com.cnh.pf.ymudwservice",
-                "com.cnh.pf.ymudwservice.widget.AverageYieldUDW");
-        data.add(item);
-
-        item = new SingleUdwViewHolder.UdwItem(this, i++,
-                "AverageYieldCounterUDW",
-                "com.cnh.pf.ymudwservice",
-                "com.cnh.pf.ymudwservice.widget.AverageYieldCounterUDW");
-        data.add(item);
-
-        item = new SingleUdwViewHolder.UdwItem(this, i++,
-                "AverageMoistureUDW",
-                "com.cnh.pf.ymudwservice",
-                "com.cnh.pf.ymudwservice.widget.AverageMoistureUDW");
-        data.add(item);
-
-        item = new SingleUdwViewHolder.UdwItem(this, i++,
-                "AverageFlowUDW",
-                "com.cnh.pf.ymudwservice",
-                "com.cnh.pf.ymudwservice.widget.AverageFlowUDW");
-        data.add(item);
-
-        item = new SingleUdwViewHolder.UdwItem(this, i++,
-                "CropTemperatureUDW",
-                "com.cnh.pf.ymudwservice",
-                "com.cnh.pf.ymudwservice.widget.CropTemperatureUDW");
-        data.add(item);
-
-        item = new SingleUdwViewHolder.UdwItem(this, i++,
-                "AverageFlowCounterUDW",
-                "com.cnh.pf.ymudwservice",
-                "com.cnh.pf.ymudwservice.widget.AverageFlowCounterUDW");
-        data.add(item);
-
-        item = new SingleUdwViewHolder.UdwItem(this, i++,
-                "CrossTrackErrorStatusUDW",
-                "com.cnh.pf.agudwservice",
-                "com.cnh.pf.agudwservice.widget.CrossTrackErrorStatusUDW");
-        data.add(item);
-
-        item = new SingleUdwViewHolder.UdwItem(this, i++,
-                "RowGuideOffsetUDW",
-                "com.cnh.pf.agudwservice",
-                "com.cnh.pf.agudwservice.widget.RowGuideOffsetUDW");
-        data.add(item);
-
-        return data;
     }
 }
